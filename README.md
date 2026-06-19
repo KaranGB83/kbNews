@@ -2,8 +2,6 @@
 
 A full-stack news platform for creating, reading, updating, and deleting articles with rate-limiting protection and responsive design.
 
-## Tech Stack Badges
-
 ![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
@@ -25,10 +23,10 @@ A full-stack news platform for creating, reading, updating, and deleting article
 - **Complete CRUD Operations** — Create, read, update, and delete news articles with an intuitive interface
 - **Rate Limiting** — Redis-backed sliding window rate limiter (100 requests per 60 seconds) to protect the API
 - **Responsive Design** — Mobile-first UI built with Tailwind CSS and DaisyUI components
-- **Real-time Updates** — Instant article feed sorted by newest first with no page refresh required
-- **Clean Architecture** — MVC pattern on backend with clear separation of concerns
+- **Newest-First Feed** — Articles sorted by creation date with no manual refresh required
+- **Clean Architecture** — MVC pattern on the backend with clear separation of concerns
 - **REST API** — Fully RESTful backend with consistent error handling and HTTP status codes
-- **Environment-Based Configuration** — Seamless switching between local development and production deployments
+- **Environment-Based Configuration** — Automatic API base URL switching between local development and production
 
 ## 🛠️ Tech Stack
 
@@ -58,32 +56,30 @@ kbNews/
 │   │   │   └── News.js               # News schema (title, content, category, timestamps)
 │   │   ├── routes/
 │   │   │   └── newsRoutes.js         # API routes
-│   │   └── server.js                 # Express entry point
+│   │   └── server.js                 # Express entry point (serves frontend in production)
 │   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Navbar.jsx            # Navigation bar
 │   │   │   ├── NewsCard.jsx          # Article card component
-│   │   │   ├── NewsNotFound.jsx      # 404 fallback
+│   │   │   ├── NewsNotFound.jsx      # Empty state UI
 │   │   │   └── RateLimitedUI.jsx     # Rate limit error UI
 │   │   ├── lib/
-│   │   │   ├── axios.js              # Axios instance with env-based URLs
-│   │   │   └── utils.js              # Date formatting utilities
+│   │   │   ├── axios.js              # Axios instance, base URL switches on Vite mode
+│   │   │   └── utils.js              # Date formatting utility
 │   │   ├── pages/
 │   │   │   ├── HomePage.jsx          # Article feed
 │   │   │   ├── CreatePage.jsx        # Article creation form
 │   │   │   └── ArticlePage.jsx       # Single article view with inline editing
-│   │   ├── App.jsx                   # Main app component
-│   │   ├── main.jsx                  # React entry point
-│   │   └── App.css, index.css        # Styling
+│   │   ├── App.jsx                   # Main app component + routing
+│   │   └── main.jsx                  # React entry point
 │   ├── vite.config.js
 │   ├── tailwind.config.js
 │   ├── postcss.config.js
-│   ├── eslint.config.js
 │   ├── index.html
 │   └── package.json
-├── package.json                      # Root workspace config
+├── package.json                      # Root build/start scripts for deployment
 └── README.md
 ```
 
@@ -93,7 +89,7 @@ All endpoints are prefixed with `/api/news` and protected by rate-limiting middl
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/news` | Retrieve all articles sorted by newest first |
+| `GET` | `/api/news` | Retrieve all articles, sorted newest first |
 | `GET` | `/api/news/:id` | Retrieve a single article by ID |
 | `POST` | `/api/news` | Create a new article (title and content required; category optional) |
 | `PUT` | `/api/news/:id` | Update an existing article |
@@ -133,7 +129,7 @@ All endpoints are prefixed with `/api/news` and protected by rate-limiting middl
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/kbNews.git
+   git clone https://github.com/KaranGB83/kbNews.git
    cd kbNews
    ```
 
@@ -157,29 +153,26 @@ All endpoints are prefixed with `/api/news` and protected by rate-limiting middl
    UPSTASH_REDIS_REST_URL=https://your-region-rest.upstash.io
    UPSTASH_REDIS_REST_TOKEN=your_rest_token_here
    NODE_ENV=development
-   PORT=5000
+   PORT=5001
    ```
 
-5. **Create a `.env` file in the `frontend/` directory:**
-   ```
-   VITE_API_BASE_URL=http://localhost:5000
-   ```
+   > No `.env` file is needed in `frontend/` — the API base URL switches automatically between `http://localhost:5001/api` (dev) and `/api` (production) based on Vite's build mode.
 
-6. **Start the development servers:**
+5. **Start the development servers:**
 
    *Backend (from `backend/` directory):*
    ```bash
    npm run dev
    ```
 
-   *Frontend (from `frontend/` directory in a new terminal):*
+   *Frontend (from `frontend/` directory, in a separate terminal):*
    ```bash
    npm run dev
    ```
 
-7. **Open your browser:**
+6. **Open your browser:**
    - Frontend: `http://localhost:5173`
-   - Backend API: `http://localhost:5000/api/news`
+   - Backend API: `http://localhost:5001/api/news`
 
 ## 🔑 Environment Variables
 
@@ -187,45 +180,40 @@ All endpoints are prefixed with `/api/news` and protected by rate-limiting middl
 |----------|-------------|---------|
 | `MONGO_URI` | MongoDB Atlas connection string | `mongodb+srv://user:pass@cluster.mongodb.net/kbNews?retryWrites=true&w=majority` |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint | `https://us1-quick-deer.upstash.io` |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis authentication token | `AZiuASQpODk4NzY1NDMyMWE4NDc4NGI4ZjhkN...` |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis authentication token | `AZiu...` |
 | `NODE_ENV` | Execution environment | `development` or `production` |
-| `PORT` | Backend server port | `5000` |
-| `VITE_API_BASE_URL` | Frontend API endpoint (frontend .env) | `http://localhost:5000` |
+| `PORT` | Backend server port | `5001` |
 
 ## 🌍 Deployment
 
-This application is deployed on **Render** as a single web service. The deployment architecture:
+This application is deployed on **Render** as a single web service:
 
-1. **Build Command:** Installs dependencies for both backend and frontend, then builds the React app to a static bundle
-2. **Start Command:** Runs the Express server, which serves the built frontend as static files in production
-3. **Environment Variables:** All backend `.env` variables are configured in Render's dashboard
+1. **Build Command:** `npm run build` — installs backend and frontend dependencies, then builds the React app to a static bundle (devDependencies are explicitly included so Vite is available during the build step)
+2. **Start Command:** `npm start` — runs the Express server, which serves the built frontend as static files in production
+3. **Environment Variables:** All backend variables are configured in Render's dashboard, with `NODE_ENV=production`
 4. **Live URL:** https://kbnews.onrender.com
 
-The Express server detects `NODE_ENV=production` and serves the frontend build from the `frontend/dist/` directory, eliminating the need for separate frontend and backend deployments.
+The Express server checks `NODE_ENV === "production"` and serves the frontend build from `frontend/dist/`, with a catch-all route returning `index.html` so React Router can handle client-side routing — eliminating the need for separate frontend and backend deployments.
 
 ## 💡 What I Learned
 
-- **ESM Import Timing with dotenv** — Managing the order of ES module imports to ensure environment variables load before they're referenced, especially in a monorepo structure
-- **NODE_ENV and Deployment Dependencies** — Understanding how `NODE_ENV=production` affects npm's installation behavior and build optimization; avoiding devDependencies in production while keeping necessary build tools available during the build phase
-- **Redis-Based Rate Limiting** — Implementing a sliding window rate limiter with Upstash Redis to protect API endpoints without maintaining server state; handling 429 responses gracefully on the frontend
-- **Scalable Backend Architecture** — Building an Express MVC structure that separates controllers, middleware, routes, and models; making it simple to add features (authentication, pagination, logging) without refactoring core files
+- **ESM Import Order with dotenv** — In an ES Modules backend, `import` statements are hoisted, so `dotenv` has to be loaded as a side-effect import (`import "dotenv/config"`) before any other module reads `process.env`, otherwise config values like the database URI come through as `undefined`.
+- **`NODE_ENV` and Deployment Installs** — Setting `NODE_ENV=production` on Render affects `npm install` itself, not just runtime logic — it skips devDependencies by default, which broke the frontend build since `vite` is a devDependency. Fixed by explicitly forcing `--include=dev` on the frontend install step while keeping `NODE_ENV=production` for the running app.
+- **Redis-Based Rate Limiting** — Implemented a sliding window rate limiter with Upstash Redis to protect API endpoints without maintaining in-memory server state, including a "fail open" fallback so the API stays usable if Redis is temporarily unreachable.
+- **Scalable Backend Architecture** — Structured the Express backend around config/controllers/middleware/models/routes, making it straightforward to extend with authentication, pagination, or logging without touching unrelated files.
 
 ## 🔮 Future Improvements
 
-- **User Authentication** — Add JWT-based authentication to track article authors and restrict edit/delete permissions
-- **Image Uploads** — Integrate image upload functionality with a CDN or cloud storage service
-- **Search & Pagination** — Implement full-text search and paginated article feeds for better UX at scale
-- **Rich Text Editor** — Replace textarea with a rich text editor (e.g., Quill or Tiptap) for better content formatting
-- **Comments & Reactions** — Add user comments and like/dislike functionality to increase engagement
-- **Analytics Dashboard** — Track article views, popular categories, and user engagement metrics
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+- **User Authentication** — JWT-based auth to track article authors and restrict edit/delete permissions to the original author
+- **Image Uploads** — Cover images for articles via Cloudinary or similar
+- **Search & Pagination** — Full-text search and paginated feeds for better UX at scale
+- **Rich Text Editor** — Replace the plain textarea with a rich text editor (Quill or Tiptap)
+- **Comments & Reactions** — Reader engagement features
+- **Analytics Dashboard** — Track article views and popular categories
 
 ## 👤 Author
 
-**Your Name**  
+**Karan Bhatre**
 - GitHub: [@KaranGB83](https://github.com/KaranGB83)
 - LinkedIn: [karan-bhatre](https://linkedin.com/in/karan-bhatre-912634322/)
 
