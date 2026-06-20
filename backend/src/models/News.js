@@ -1,24 +1,27 @@
 import mongoose from "mongoose";
 
-// Schema for the News Article
 const newsSchema = new mongoose.Schema(
-    {
-        title: {
-            type: String,
-            required: true,
-        },
-        content: {
-            type: String,
-            required: true,
-        },
-        content: {
-            type: String,
-            default: "General",
-        },
+  {
+    title: {
+      type: String,
+      required: true,
     },
-    { timestamps : true}
+    content: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      default: "General",
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  { timestamps: true },
 );
 
-// Model for News
 const News = mongoose.model("News", newsSchema);
 export default News;
