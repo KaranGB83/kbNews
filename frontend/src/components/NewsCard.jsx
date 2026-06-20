@@ -1,3 +1,4 @@
+import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { formatDate } from "../lib/utils";
 import { Trash2 } from "lucide-react";
@@ -5,6 +6,7 @@ import axios from "../lib/axios";
 import toast from "react-hot-toast";
 
 const NewsCard = ({ article, onDelete }) => {
+  const { user } = useAuth();
   const handleDelete = async () => {
     if (!window.confirm("Delete this article?")) return;
     try {
@@ -32,9 +34,11 @@ const NewsCard = ({ article, onDelete }) => {
         <p className="text-base-content/70 text-sm line-clamp-3">{article.content}</p>
         <div className="flex items-center justify-between mt-2">
           <span className="text-xs text-base-content/50">{formatDate(article.createdAt)}</span>
-          <button onClick={handleDelete} className="btn btn-ghost btn-xs text-error">
-            <Trash2 size={14} />
-          </button>
+          {user?._id === article.author?._id && (
+            <button onClick={handleDelete} className="btn btn-ghost btn-sm gap-2">
+              <Trash2 size={16} /> Delete
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../lib/axios";
@@ -14,6 +15,8 @@ const ArticlePage = () => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ title: "", content: "", category: "" });
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const isOwner = user && article.author && user._id === article.author._id;
 
   useEffect(() => {
     const fetch = async () => {
@@ -76,14 +79,16 @@ const ArticlePage = () => {
           <h1 className="text-3xl font-extrabold mb-3">{article.title}</h1>
           <p className="text-base-content/50 text-sm mb-8">{formatDate(article.createdAt)}</p>
           <p className="text-base-content/80 leading-relaxed whitespace-pre-wrap">{article.content}</p>
-          <div className="flex gap-3 mt-10">
-            <button onClick={() => setEditing(true)} className="btn btn-outline btn-sm gap-2">
-              <Pencil size={14} /> Edit
-            </button>
-            <button onClick={handleDelete} className="btn btn-error btn-sm gap-2">
-              <Trash2 size={14} /> Delete
-            </button>
-          </div>
+          {isOwner && (
+            <div className="flex gap-3 mt-10">
+              <button onClick={() => setEditing(true)} className="btn btn-outline btn-sm gap-2">
+                <Pencil size={14} /> Edit
+              </button>
+              <button onClick={handleDelete} className="btn btn-error btn-sm gap-2">
+                <Trash2 size={14} /> Delete
+              </button>
+            </div>
+          )}
         </>
       ) : (
         <form onSubmit={handleUpdate} className="flex flex-col gap-5">
