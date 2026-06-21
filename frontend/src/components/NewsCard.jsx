@@ -1,12 +1,14 @@
-import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { formatDate } from "../lib/utils";
-import { Trash2 } from "lucide-react";
+import { Trash2, ImageOff } from "lucide-react";
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 const NewsCard = ({ article, onDelete }) => {
   const { user } = useAuth();
+  const isOwner = user && article.author && user._id === article.author._id;
+
   const handleDelete = async () => {
     if (!window.confirm("Delete this article?")) return;
     try {
@@ -19,7 +21,16 @@ const NewsCard = ({ article, onDelete }) => {
   };
 
   return (
-    <div className="card bg-base-200 border border-base-300 hover:border-primary transition-all duration-200">
+    <div className="card bg-base-200 border border-base-300 hover:border-primary transition-all duration-200 overflow-hidden">
+      <Link to={`/article/${article._id}`}>
+        {article.coverImage ? (
+          <img src={article.coverImage} alt={article.title} className="h-44 w-full object-cover" />
+        ) : (
+          <div className="h-44 w-full bg-base-300 flex items-center justify-center text-base-content/30">
+            <ImageOff size={28} />
+          </div>
+        )}
+      </Link>
       <div className="card-body gap-3">
         {article.category && (
           <span className="badge badge-primary badge-outline text-xs w-fit">
@@ -34,9 +45,9 @@ const NewsCard = ({ article, onDelete }) => {
         <p className="text-base-content/70 text-sm line-clamp-3">{article.content}</p>
         <div className="flex items-center justify-between mt-2">
           <span className="text-xs text-base-content/50">{formatDate(article.createdAt)}</span>
-          {user?._id === article.author?._id && (
-            <button onClick={handleDelete} className="btn btn-ghost btn-sm gap-2">
-              <Trash2 size={16} /> Delete
+          {isOwner && (
+            <button onClick={handleDelete} className="btn btn-ghost btn-xs text-error">
+              <Trash2 size={14} />
             </button>
           )}
         </div>
