@@ -3,7 +3,19 @@ import cloudinary from "../config/cloudinary.js";
 
 export const getAllNews = async (req, res) => {
   try {
-    const articles = await News.find().sort({ createdAt: -1 }).populate("author", "name");
+    const { search, category } = req.query;
+    const filter = {};
+
+    if (search) {
+      const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.title = { $regex: escapeRegex(search), $options: "i" };
+    }
+
+    if (category && category !== "All") {
+      filter.category = category;
+    }
+
+    const articles = await News.find(filter).sort({ createdAt: -1 }).populate("author", "name");
     res.status(200).json(articles);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
