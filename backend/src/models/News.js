@@ -14,13 +14,17 @@ const newsSchema = new mongoose.Schema(
       type: String,
       default: "General",
     },
+    coverImage: {
+      type: String,
+      default: "",
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const News = mongoose.model("News", newsSchema);
