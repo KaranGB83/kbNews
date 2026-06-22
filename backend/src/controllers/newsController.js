@@ -1,23 +1,40 @@
 import News from "../models/News.js";
-import cloudinary from "../config/cloudinary.js";
+import { v2 as cloudinary } from "cloudinary";
 
 export const getAllNews = async (req, res) => {
   try {
-    const { search, category } = req.query;
-    const filter = {};
+    const { search, category, page = 1, limit = 12 } = req.query;
 
+    const filter = {};
     if (search) {
       const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.title = { $regex: escapeRegex(search), $options: "i" };
     }
-
     if (category && category !== "All") {
       filter.category = category;
     }
 
-    const articles = await News.find(filter).sort({ createdAt: -1 }).populate("author", "name");
-    res.status(200).json(articles);
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [articles, total] = await Promise.all([
+      News.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .populate("author", "name"),
+      News.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      articles,
+      currentPage: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      hasMore: pageNum < Math.ceil(total / limitNum),
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -32,10 +49,19 @@ export const getNewsById = async (req, res) => {
   }
 };
 
-// POST /api/news — create article
+// Lazy init — only configures when first upload happens, not on every server start
+const getCloudinary = () => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  return cloudinary;
+};
+
 const uploadBufferToCloudinary = (buffer) => {
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
+    const stream = getCloudinary().uploader.upload_stream(
       { folder: "kbnews" },
       (error, result) => {
         if (error) return reject(error);
@@ -57,15 +83,12 @@ export const createNews = async (req, res) => {
     let coverImage = "";
 
     if (req.file) {
-      // Priority 1: an uploaded file
       coverImage = await uploadBufferToCloudinary(req.file.buffer);
     } else if (imageUrl) {
-      // Priority 2: a pasted image URL — upload it to Cloudinary too,
-      // so it benefits from the same hosting/optimization and won't break if the source goes down
-      const result = await cloudinary.uploader.upload(imageUrl, { folder: "kbnews" });
+      // fixed: use getCloudinary() instead of bare cloudinary
+      const result = await getCloudinary().uploader.upload(imageUrl, { folder: "kbnews" });
       coverImage = result.secure_url;
     }
-    // else: no image — coverImage stays "", which is fine, it's optional
 
     const article = new News({ title, content, category, coverImage, author: req.userId });
     await article.save();
@@ -76,7 +99,7 @@ export const createNews = async (req, res) => {
   }
 };
 
-// PUT /api/news/:id — update article
+// PUT /api/news/:id — only the author can update
 export const updateNews = async (req, res) => {
   try {
     const article = await News.findById(req.params.id);
@@ -91,7 +114,8 @@ export const updateNews = async (req, res) => {
     if (req.file) {
       article.coverImage = await uploadBufferToCloudinary(req.file.buffer);
     } else if (imageUrl) {
-      const result = await cloudinary.uploader.upload(imageUrl, { folder: "kbnews" });
+      // fixed: use getCloudinary() instead of bare cloudinary
+      const result = await getCloudinary().uploader.upload(imageUrl, { folder: "kbnews" });
       article.coverImage = result.secure_url;
     }
 
@@ -107,7 +131,7 @@ export const updateNews = async (req, res) => {
   }
 };
 
-// DELETE /api/news/:id — delete article
+// DELETE /api/news/:id — only the author can delete
 export const deleteNews = async (req, res) => {
   try {
     const article = await News.findById(req.params.id);
