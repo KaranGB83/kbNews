@@ -43,43 +43,68 @@ A full-stack news platform for creating, reading, updating, and deleting article
 
 ```
 kbNews/
+├── docker-compose.dev.yml           # Dev compose config (frontend + backend)
+├── docker-compose.prod.yml          # Production compose config
 ├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   ├── db.js                 # MongoDB connection
-│   │   │   └── upstash.js            # Redis rate limiter config
-│   │   ├── controllers/
-│   │   │   └── newsController.js     # CRUD business logic
-│   │   ├── middleware/
-│   │   │   └── rateLimiter.js        # Rate limiting middleware
-│   │   ├── models/
-│   │   │   └── News.js               # News schema (title, content, category, timestamps)
-│   │   ├── routes/
-│   │   │   └── newsRoutes.js         # API routes
-│   │   └── server.js                 # Express entry point (serves frontend in production)
-│   └── package.json
+│   ├── Dockerfile                   # Backend container definition
+│   ├── package.json
+│   └── src/
+│       ├── config/
+│       │   ├── db.js                 # MongoDB connection
+│       │   ├── cloudinary.js         # Cloudinary upload config
+│       │   ├── nodemailer.js         # Mailer config
+│       │   └── upstash.js            # Redis rate limiter config
+│       ├── controllers/
+│       │   ├── authController.js     # Auth logic (signup, login, verify)
+│       │   └── newsController.js     # CRUD business logic
+│       ├── middleware/
+│       │   ├── rateLimiter.js        # Rate limiting middleware
+│       │   ├── upload.js             # File upload middleware
+│       │   └── verifyToken.js        # JWT verification middleware
+│       ├── models/
+│       │   ├── News.js               # News schema
+│       │   └── User.js               # User schema
+│       ├── routes/
+│       │   ├── authRoutes.js         # Auth API routes
+│       │   └── newsRoutes.js         # News API routes
+│       └── server.js                 # Express entry point (serves frontend in production)
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx            # Navigation bar
-│   │   │   ├── NewsCard.jsx          # Article card component
-│   │   │   ├── NewsNotFound.jsx      # Empty state UI
-│   │   │   └── RateLimitedUI.jsx     # Rate limit error UI
-│   │   ├── lib/
-│   │   │   ├── axios.js              # Axios instance, base URL switches on Vite mode
-│   │   │   └── utils.js              # Date formatting utility
-│   │   ├── pages/
-│   │   │   ├── HomePage.jsx          # Article feed
-│   │   │   ├── CreatePage.jsx        # Article creation form
-│   │   │   └── ArticlePage.jsx       # Single article view with inline editing
-│   │   ├── App.jsx                   # Main app component + routing
-│   │   └── main.jsx                  # React entry point
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
+│   ├── Dockerfile                   # Frontend container (build + optional nginx)
+│   ├── package.json
 │   ├── index.html
-│   └── package.json
-├── package.json                      # Root build/start scripts for deployment
+│   ├── nginx.conf                    # Nginx config used in production container
+│   └── src/
+│       ├── App.css
+│       ├── App.jsx
+│       ├── index.css
+│       ├── main.jsx
+│       ├── assets/
+│       ├── components/
+│       │   ├── Navbar.jsx
+│       │   ├── NewsCard.jsx
+│       │   ├── NewsNotFound.jsx
+│       │   ├── ProtectedRoute.jsx
+│       │   ├── RateLimitedUI.jsx
+│       │   └── SearchBar.jsx
+│       ├── context/
+│       │   └── AuthContext.jsx
+│       ├── hooks/
+│       │   └── useInfiniteScroll.js
+│       ├── lib/
+│       │   ├── axios.js
+│       │   └── utils.js
+│       └── pages/
+│           ├── ArticlePage.jsx
+│           ├── CreatePage.jsx
+│           ├── ForgotPasswordPage.jsx
+│           ├── HomePage.jsx
+│           ├── LoginPage.jsx
+│           ├── ResetPasswordPage.jsx
+│           ├── SignupPage.jsx
+│           └── VerifyEmailPage.jsx
+├── docs/
+│   └── Screenshot.png
+├── package.json                      # Root build/start scripts and Docker helpers
 └── README.md
 ```
 
@@ -173,6 +198,30 @@ All endpoints are prefixed with `/api/news` and protected by rate-limiting middl
 6. **Open your browser:**
    - Frontend: `http://localhost:5173`
    - Backend API: `http://localhost:5001/api/news`
+
+### Docker (recommended)
+
+The project is fully dockerized for both development and production using `docker-compose`.
+
+1. **Build and run (development):**
+```bash
+# from repository root
+docker compose -f docker-compose.dev.yml up --build
+```
+
+2. **Build and run (production):**
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+3. **Stop and remove containers:**
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+Notes:
+- Ensure your backend environment variables are available to the containers. You can place them in `backend/.env` or configure a Docker secrets/ENV file referenced by the compose files.
+- The production compose uses the `frontend` build served by `nginx` (see `frontend/nginx.conf`) and the `backend` image to run Express.
 
 ## 🔑 Environment Variables
 
