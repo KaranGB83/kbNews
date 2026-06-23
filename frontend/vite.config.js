@@ -1,13 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
+    watch: {
+      usePolling: true,   // required for HMR inside Docker on some systems
+    },
     proxy: {
       "/api": {
-        target: "http://localhost:5001",
+        target: "http://backend:5001",  // use service name, not localhost, inside Docker
         changeOrigin:true,
       },
     },
