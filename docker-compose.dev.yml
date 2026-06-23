@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development        # uses the dev stage in backend/Dockerfile
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend:/app           # mount source code for hot reload
+      - /app/node_modules        # anonymous volume keeps container's node_modules intact
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development        # uses the dev stage in frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app          # mount source code for Vite HMR
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
