@@ -7,6 +7,7 @@ import {
   forgotPassword,
   resetPassword,
   checkAuth,
+  resendVerificationEmail, 
 } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -18,6 +19,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.post("/logout", logout);
 router.post("/verify-email", verifyEmail);
+router.post("/resend-verification", verifyToken, resendVerificationEmail);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 

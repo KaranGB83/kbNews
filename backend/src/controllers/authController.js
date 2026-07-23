@@ -197,3 +197,42 @@ export const checkAuth = async (req, res) => {
     res.status(400).json({ success: false, message: "Server error" });
   }
 };
+
+// POST /api/auth/resend-verification
+export const resendVerificationEmail = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ success: false, message: "Email is already verified" });
+    }
+
+    // Generate a fresh 6-digit code
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await user.save();
+
+    await transporter.sendMail({
+      from: sender,
+      to: user.email,
+      subject: "Your new kbNews verification code",
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+          <h2>New verification code</h2>
+          <p>You requested a new code. Your previous code has been invalidated.</p>
+          <h1 style="letter-spacing: 4px;">${verificationToken}</h1>
+          <p>This code expires in 24 hours.</p>
+        </div>
+      `,
+    });
+
+    res.status(200).json({ success: true, message: "New verification code sent" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
