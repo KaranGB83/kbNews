@@ -7,6 +7,7 @@ services:
       - "5001:5001"
     volumes:
       - ./backend:/app           # mount source code for hot reload
+      - ./admin:/admin           # mount admin module
       - /app/node_modules        # anonymous volume keeps container's node_modules intact
     env_file:
       - ./backend/.env

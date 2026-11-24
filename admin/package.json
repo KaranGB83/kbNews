@@ -1,0 +1,17 @@
+{
+  "name": "kbnews-admin",
+  "version": "1.0.0",
+  "description": "Dedicated Admin Module for kbNews portal",
+  "type": "module",
+  "main": "routes/adminRoutes.js",
+  "scripts": {
+    "create-admin": "node scripts/createAdmin.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "mongoose": "^9.7.0"
+  }
+}

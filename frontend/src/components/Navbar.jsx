@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Newspaper, PenLine, LogOut } from "lucide-react";
+import { Newspaper, PenLine, LogOut, ShieldAlert } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
@@ -11,6 +11,8 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const isAdmin = user && (user.role === "admin" || user.isAdmin);
+
   return (
     <nav className="bg-base-200 border-b border-base-300 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
       <Link to="/" className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-primary">
@@ -20,6 +22,11 @@ const Navbar = () => {
       <div className="flex items-center gap-3">
         {user ? (
           <>
+            {isAdmin && (
+              <Link to="/admin" className="btn btn-warning btn-outline btn-sm gap-1.5">
+                <ShieldAlert size={15} /> Admin
+              </Link>
+            )}
             <Link to="/create" className="btn btn-primary btn-sm gap-2">
               <PenLine size={16} /> Write Article
             </Link>
