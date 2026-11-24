@@ -1,18 +1,9 @@
 import News from "../../backend/src/models/News.js";
-import { v2 as cloudinary } from "cloudinary";
-
-const getCloudinary = () => {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  return cloudinary;
-};
+import cloudinary from "../../backend/src/config/cloudinary.js";
 
 const uploadBufferToCloudinary = (buffer) => {
   return new Promise((resolve, reject) => {
-    const stream = getCloudinary().uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_stream(
       { folder: "kbnews" },
       (error, result) => {
         if (error) return reject(error);
@@ -94,7 +85,7 @@ export const createNewsAsAdmin = async (req, res) => {
     if (req.file) {
       coverImage = await uploadBufferToCloudinary(req.file.buffer);
     } else if (imageUrl) {
-      const result = await getCloudinary().uploader.upload(imageUrl, { folder: "kbnews" });
+      const result = await cloudinary.uploader.upload(imageUrl, { folder: "kbnews" });
       coverImage = result.secure_url;
     }
 
@@ -135,7 +126,7 @@ export const updateNewsAsAdmin = async (req, res) => {
     if (req.file) {
       article.coverImage = await uploadBufferToCloudinary(req.file.buffer);
     } else if (imageUrl) {
-      const result = await getCloudinary().uploader.upload(imageUrl, { folder: "kbnews" });
+      const result = await cloudinary.uploader.upload(imageUrl, { folder: "kbnews" });
       article.coverImage = result.secure_url;
     }
 
