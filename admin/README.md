@@ -2,7 +2,7 @@
 
 This directory houses the dedicated administration logic for the **kbNews** portal, inspired by Django Admin's table-driven CRUD and rapid management, but designed with a modern and sleek interface.
 
-## 🚀 Features
+## Features
 
 - **Users Management Table**:
   - Live search, filtering by verification status (`verified`, `unverified`) and role (`admin`, `user`).
@@ -20,7 +20,7 @@ This directory houses the dedicated administration logic for the **kbNews** port
   - Only users with `role: "admin"` or `isAdmin: true` can access `/admin/*` and `/api/admin/*`.
   - No public admin registration; admins are provisioned manually via CLI or by another admin.
 
-## 🛠️ CLI Setup for Admin
+## CLI Setup for Admin
 
 To create or promote an admin user manually:
 
@@ -37,7 +37,7 @@ node admin/scripts/createAdmin.js --promote user@example.com
 node admin/scripts/createAdmin.js
 ```
 
-## 🔌 API Endpoints (`/api/admin`)
+## API Endpoints (`/api/admin`)
 
 All endpoints require an authenticated session (`token` cookie) from a user with administrator privileges.
 
